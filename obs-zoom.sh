@@ -14,25 +14,6 @@ readarray sessions < scp-zoomsessions
 
 sessionsNUM="${#sessions[@]}"	# number of sessions for the day
 
-session_details(){
-	line="$1"
-	first=${line#*headline[1-3]\"\>}
-	second=${first%\</h*}
-	TITLE="$second"
-	URL="$(echo $line |grep -o 'https://zoom[^"]*')"
-	TIME="$(echo $TITLE |grep -o '[0-9][0-9]:[0-9][0-9]')"
-	FILENAME="$(echo ${TITLE} |tr ' ' '_')"
-	
-	echo "Start Time: ${TIME}"
-	echo "Session Name ${TITLE}"
-    echo "Session Link ${URL}"
-   
-    #echo ${FILENAME}
-}
-
-#session_details "${sessions[${SESSIONID}]}"
-
-	
 sessions_list(){
 	unset arr_list
 	arr_list=()
@@ -74,11 +55,29 @@ sessions_list(){
 	done   
 }
 
+start_zoom(){
+	/usr/bin/zoom --url="${URL}&pwd=Sport" &>/dev/null &
+}
+
+start_record_zoom(){
+
+	/snap/bin/obs-studio --startrecording --profile "zoom" --portable --minimize-to-tray &>/dev/null &
+}
+
+stop_zoom(){
+		/usr/bin/killall -9 obs &>/dev/null
+		/usr/bin/killall -9 obs &>/dev/null
+		/usr/bin/killall -9 zoom &>/dev/null
+}
+
+record_cleanup(){
+	rm -f scp-zoomsessions
+	cd ~/Videos/recording
+	mv "$(ls -1t |head -1)" "${FILENAME}_${MINUTES}min_$(date +'%Y%m%d').mkv"
+}
 
 session_record(){
 	SESSIONID=$(sessions_list)
-	#echo -e "  "
-	#read -p "Enter Session ID to record: " ID
 	ID=$(echo "${SESSIONID}" |awk -F: '{print $1}')
 	sessionsNUM="${#sessions[@]}"
 	line=""${sessions[${ID}]}""
@@ -88,69 +87,60 @@ session_record(){
 	URL="$(echo $line |grep -o 'https://zoom[^"]*')"
 	TIME="$(echo $TITLE |grep -o '[0-9][0-9]:[0-9][0-9]')"
 	FILENAME="$(echo ${TITLE} |tr ' ' '_')"
+
+	# start asking if want to record or just watch the session
+	zenity --question --title="" --text "Do you want to record or just Watch" --ok-label="Record" --cancel-label="Watch" 
+	if [ $? = 1 ]
+	then 
+		start_zoom
+	else
 	
-	#DURATION=$(zenity --entry --title "Recording Time" --text "How many minutes do you want to record:")
-	
-    #echo -e "Start Recording ${TITLE} "
-    #echo -e "${SESSIONID}"
-    #echo -e "${URL}"
-    #echo -e "$FILENAME"
+														
 	DURATION=$(zenity --title "Record Timer" --window-icon $ICON --text "No decimals"\
-    --entry-text "Enter time in Minutes" --entry)           # Input dialogue.
+    --entry-text "Enter time in Minutes" --entry)           	# Input dialogue for number of minutes to record.
 	if [ $? = 1 ]; then exit $?; fi   
-
-
-	/usr/bin/zoom --url="${URL}&pwd=Sport" &>/dev/null &
+	sleep 1
+	start_zoom													# start zoom
 	sleep 6
-	/snap/bin/obs-studio --startrecording --profile "zoom" --portable --minimize-to-tray &>/dev/null &
-	#sleep ${DURATION}m
+	start_record_zoom										 	# start recording
 		
     MINUTES=$DURATION
-    COUNT=$((DURATION*=60))									  # get time in seconds
-	START=$COUNT                                              # Set a start point.
+    COUNT=$((DURATION*=60))										# get time in seconds
+	START=$COUNT                                           	   	# Set a start point.
 
-	until [ "$COUNT" -eq "0" ]; do                            # Countdown loop.
-		((COUNT-=1))                                          # Decrement seconds.
-		PERCENT=$((100-100*COUNT/START))                      # Calc percentage.
-		echo "#Time remaining$(echo "obase=60;$COUNT" | bc)"  # Convert to H:M:S.
-		echo $PERCENT                                         # Outut for progbar.
+	until [ "$COUNT" -eq "0" ]; do                           	# Countdown loop.
+		((COUNT-=1))                                         	# Decrement seconds.
+		PERCENT=$((100-100*COUNT/START))                      	# Calc percentage.
+		echo "#Time remaining$(echo "obase=60;$COUNT" | bc)" 	# Convert to H:M:S.
+		echo $PERCENT                                         	# Outut for progbar.
 		sleep 1
 		
 	done | zenity --title "Record Timer" --progress --percentage=0 --text=""\
-		--window-icon=$ICON --auto-close                      # Progbar/time left.
+		--window-icon=$ICON --auto-close                      	# Progbar/time left.
 
 	if [ $? = 1 ]
 		then 
 		echo "Record Time Finished"
-		/usr/bin/killall -9 obs &>/dev/null
-		/usr/bin/killall -9 obs &>/dev/null
-		/usr/bin/killall -9 zoom &>/dev/null
+		stop_zoom											  	# calling stop_zoom function to kill zoom
 		sleep 2
-		rm -f scp-zoomsessions
-		cd ~/Videos/recording
-		mv "$(ls -1t |head -1)" "${FILENAME}_$(date +'%Y%m%d').mkv"
-		
+		record_cleanup										  	# clean up the mess and rename the file
 		exit $?
 	fi
 	
 		echo "Record Canceld"
-		/usr/bin/killall -9 obs &>/dev/null
-		/usr/bin/killall -9 obs &>/dev/null
-		/usr/bin/killall -9 zoom &>/dev/null
+		stop_zoom												# Stop Zoom
 		sleep 2
-		rm -f scp-zoomsessions
-		cd ~/Videos/recording
-		mv "$(ls -1t |head -1)" "${FILENAME}_${MINUTES}min_$(date +'%Y%m%d').mkv"
+		record_cleanup											# clean up the mess and rename the file
 		
-	#	notify-send -i $ICON "Record Timer > ## TIMES UP ##"      # Attention finish!
+	#	notify-send -i $ICON "Record Timer > ## TIMES UP ##"  	# Attention finish!
 		
 		zenity --notification --window-icon="$ICON"\
-		--text "Record Timer > ## TIMES UP ##"                   # Indicate finished!
+		--text "Record Timer > ## TIMES UP ##"               	# Indicate finished!
 
-
+	fi															# finish check if record or watch
 	
 }
 
 #sessions_list "${sessions}"
-obs
+
 session_record #"${sessions}"
