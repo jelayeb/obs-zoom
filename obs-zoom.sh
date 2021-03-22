@@ -14,6 +14,17 @@ readarray sessions < scp-zoomsessions
 
 sessionsNUM="${#sessions[@]}"	# number of sessions for the day
 
+check_pkg(){
+
+	if dpkg-query -s "zenity" 1>/dev/null 2>&1; then
+    	return 0   # package is installed
+		
+  	else
+		echo "Package zenity is not installed"
+    	exit 1;
+  	fi
+}
+
 sessions_list(){
 	unset arr_list
 	arr_list=()
@@ -143,5 +154,7 @@ session_record(){
 }
 
 #sessions_list "${sessions}"
+
+
 
 session_record #"${sessions}"

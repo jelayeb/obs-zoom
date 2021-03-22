@@ -10,6 +10,7 @@ then i upgraded the script to use zenity to give it a GUI interface where my wif
 
 Tools Recuired for this
 
+0. before all i used bash4 here as some commands are not available on shell like readarray
 1. Zoom Meeting installed 
 2. obs-studio installed 
 3. curl installed
@@ -18,9 +19,10 @@ Tools Recuired for this
 6. last but not least linux system. i used Zorin OS, here but you can use your own fav flavour. 
 
 Process
-1. call script from command or create shortcut to double click it from desktop apps.  
+1. call script from command or simply use install.sh to install the scrip as app, and call it from the menue 
 2. select session from the list "by ok or double click"
-3. Enter number of minutes to record. 
-4. if you want to interrupt the recording before minutes are finished click cancel on the Time window. 
+3. choose if you want to watch only or watch and record
+4. Enter number of minutes to record. 
+5. if you want to interrupt the recording before minutes are finished click cancel on the Time window. 
 
 
