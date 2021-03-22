@@ -87,6 +87,7 @@ session_record(){
 	URL="$(echo $line |grep -o 'https://zoom[^"]*')"
 	TIME="$(echo $TITLE |grep -o '[0-9][0-9]:[0-9][0-9]')"
 	FILENAME="$(echo ${TITLE} |tr ' ' '_')"
+	ICON="scp.png"
 
 	# start asking if want to record or just watch the session
 	zenity --question --title="" --text "Do you want to record or just Watch" --ok-label="Record" --cancel-label="Watch" 

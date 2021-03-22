@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=SCP Sport
+Comment=SCP Online Sport
+Exec=/usr/local/bin/obs-zoom.sh
+Icon=scp.png
+Terminal=false
+Type=Application
+Encoding=UTF-8
+Categories=Network;Application;
+StartupWMClass=scp
+MimeType=x-scheme-handler/zoommtg;x-scheme-handler/zoomus;x-scheme-handler/tel;x-scheme-handler/callto;x-scheme-handler/zoomphonecall;application/x-zoom
+X-KDE-Protocols=zoommtg;zoomus;tel;callto;zoomphonecall;
+Name[en_US]=SCP Sport
