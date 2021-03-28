@@ -83,7 +83,7 @@ stop_zoom(){
 
 record_cleanup(){
 	rm -f scp-zoomsessions
-	cd ~/Videos/recording
+	cd ~/Videos/recorder
 	mv "$(ls -1t |head -1)" "${FILENAME}_${MINUTES}min_$(date +'%Y%m%d').mkv"
 }
 
